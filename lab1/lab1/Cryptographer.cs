@@ -90,7 +90,7 @@ public class Cryptographer
 
     private static int[] ByteToBits(IEnumerable<byte> bytes)
     {
-        return bytes.Take(4).SelectMany(b => Enumerable.Range(0, 8).Select(i => (b >> i) & 1)).ToArray()[..4];
+        return bytes.Take(4).SelectMany(b => Enumerable.Range(0, 8).Select(i => (b >> i) & 1)).Reverse().ToArray()[^4..];
     }
 
     private static int[] BitXor(IReadOnlyList<int> array1, IReadOnlyList<int> array2)
@@ -113,6 +113,18 @@ public class Cryptographer
     {
         return Convert.ToInt32(string.Join("", bits), 2);
     }
+    
+    private static int[] ShiftBitsLeft(IReadOnlyList<int> bits, int shiftAmount)
+    {
+        var result = new int[bits.Count];
+    
+        for (var i = shiftAmount; i < bits.Count; i++)
+        {
+            result[i - shiftAmount] = bits[i];
+        }
+    
+        return result;
+    }
 
     private int[] SimpleReplacementMode(int[] block)
     {
@@ -128,17 +140,18 @@ public class Cryptographer
                 subsequences.Add(sBits[i..(i + 4)]);
             }
 
-            var s = new List<int[]>();
+            var s = new List<int>();
             
             for (var i = 0; i < subsequences.Count; i++)
             {
                 var newSI = SubstitutionTable[i][BitsToInt(subsequences[i])];
-                Console.WriteLine(string.Join("", ByteToBits(BitConverter.GetBytes(newSI))));
-                Console.WriteLine(newSI);
-                s.Add(ByteToBits(BitConverter.GetBytes(newSI)));
+                s.AddRange(ByteToBits(BitConverter.GetBytes(newSI)));
             }
 
-            // Console.WriteLine($"[[{string.Join("], [", subsequences.Select(s => string.Join(", ", s.Select(b => b))))}]]");
+            var shiftedS = ShiftBitsLeft(s, 11);
+            var result = BitXor(shiftedS, n2);
+
+            block = n1.Concat(result).ToArray();
         }
 
         return block;
