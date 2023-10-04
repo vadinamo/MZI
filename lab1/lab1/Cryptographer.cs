@@ -33,7 +33,7 @@ public class Cryptographer
                 .Select(_ => Random.Next(0, 16))
                 .ToArray())
             .ToList();
-        
+
         return table;
     }
 
@@ -61,14 +61,14 @@ public class Cryptographer
         return blocks;
     }
 
-    private int[] SimpleReplacementMode(int[] block)
+    private int[] SimpleReplacementMode(int[] block, int roundCount)
     {
-        foreach (var key in Key)
-        {
-            var n1 = block[..32];
-            var n2 = block[32..];
+        var n1 = block[..32];
+        var n2 = block[32..];
 
-            var sBits = BitXor(n1, key);
+        for (var round = 0; round < roundCount; round++)
+        {
+            var sBits = BitXor(n1, Key[round < 24 ? round % 8 : 7 - round % 8]);
             var subsequences = new List<int[]>();
             for (var i = 0; i < sBits.Length; i += 4)
             {
@@ -97,8 +97,8 @@ public class Cryptographer
         var s = new int[64];
         for (var i = 0; i < blocks.Count; i++)
         {
-            s = SimpleReplacementMode(BitXor(s, blocks[i]));
-            blocks[i] = SimpleReplacementMode(blocks[i]);
+            s = SimpleReplacementMode(BitXor(s, blocks[i]), 16);
+            blocks[i] = SimpleReplacementMode(blocks[i], 32);
         }
 
         return s;
@@ -108,13 +108,15 @@ public class Cryptographer
     {
         var messageBytes = File.ReadAllBytes("./input.txt");
         var blocks = SplitMessageIntoBlocks(messageBytes);
-        
+
         var mac = GetMAC(blocks)[..32];
         Console.WriteLine($"MAC: {string.Join("", mac)}");
         File.WriteAllText("./MAC.txt", string.Join("", mac));
-        
-        Console.WriteLine($"Encrypted message: {Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()))}");
-        File.WriteAllText("./encrypted_message.txt", string.Join("", string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b))))));
+
+        Console.WriteLine(
+            $"Encrypted message: {Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()))}");
+        File.WriteAllText("./encrypted_message.txt",
+            string.Join("", string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b))))));
     }
 
     public void Decrypt()
@@ -126,21 +128,21 @@ public class Cryptographer
                 .Select(c => int.Parse(c.ToString())
                 ).ToArray()
             ).ToList();
-        
+
         for (var i = 0; i < blocks.Count; i++)
         {
-            blocks[i] = SimpleReplacementMode(blocks[i]);
+            blocks[i] = SimpleReplacementMode(blocks[i], 32);
         }
 
         var message = Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()));
-        
+
         var mac = GetMAC(blocks)[..32];
         var initialMac = File.ReadAllText("./MAC.txt");
         if (string.Join("", mac) != initialMac)
         {
             throw new Exception("MAC does not match");
         }
-        
+
         Console.WriteLine($"Decrypted message: {message}");
     }
 
