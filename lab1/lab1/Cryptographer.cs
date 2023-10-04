@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace lab1;
 
 public class Cryptographer
@@ -21,39 +23,6 @@ public class Cryptographer
                 .ToArray())
             .ToList();
 
-        key = new List<int[]>
-        {
-            new int[]
-            {
-                0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1
-            },
-            new int[]
-            {
-                1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1
-            },
-            new int[]
-            {
-                1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0
-            },
-            new int[]
-            {
-                0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1
-            },
-            new int[]
-            {
-                0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0
-            },
-            new int[]
-            {
-                0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0
-            },
-            new int[]
-            {
-                0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0
-            },
-            new int[] { 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1 }
-        };
-
         return key;
     }
 
@@ -64,19 +33,7 @@ public class Cryptographer
                 .Select(_ => Random.Next(0, 16))
                 .ToArray())
             .ToList();
-
-        table = new List<int[]>
-        {
-            new int[] { 11, 5, 7, 11, 11, 7, 5, 1, 11, 5, 7, 6, 0, 12, 9, 3 },
-            new int[] { 14, 15, 9, 1, 3, 11, 9, 0, 14, 0, 10, 2, 12, 6, 11, 14 },
-            new int[] { 1, 6, 7, 8, 9, 2, 2, 2, 0, 10, 4, 9, 12, 14, 10, 14 },
-            new int[] { 2, 9, 8, 7, 15, 0, 4, 14, 7, 9, 11, 4, 0, 13, 12, 6 },
-            new int[] { 5, 15, 9, 4, 13, 6, 6, 2, 0, 5, 10, 14, 15, 12, 14, 6 },
-            new int[] { 1, 14, 0, 3, 15, 6, 5, 8, 13, 0, 9, 9, 7, 0, 5, 3 },
-            new int[] { 5, 12, 0, 14, 8, 13, 11, 10, 10, 13, 15, 10, 0, 10, 8, 6 },
-            new int[] { 15, 10, 10, 6, 0, 2, 7, 10, 10, 0, 6, 8, 2, 9, 11, 14 }
-        };
-
+        
         return table;
     }
 
@@ -103,6 +60,105 @@ public class Cryptographer
 
         return blocks;
     }
+
+    private int[] SimpleReplacementMode(int[] block)
+    {
+        foreach (var key in Key)
+        {
+            var n1 = block[..32];
+            var n2 = block[32..];
+
+            var sBits = BitXor(n1, key);
+            var subsequences = new List<int[]>();
+            for (var i = 0; i < sBits.Length; i += 4)
+            {
+                subsequences.Add(sBits[i..(i + 4)]);
+            }
+
+            var s = new List<int>();
+
+            for (var i = 0; i < subsequences.Count; i++)
+            {
+                var newSI = SubstitutionTable[i][BitsToInt(subsequences[i])];
+                s.AddRange(ByteToBits(BitConverter.GetBytes(newSI)));
+            }
+
+            var shiftedS = ShiftBitsLeft(s, 11);
+            var result = BitXor(shiftedS, n2);
+
+            block = n1.Concat(result).ToArray();
+        }
+
+        return block;
+    }
+
+    private int[] GetMAC(List<int[]> blocks)
+    {
+        var s = new int[64];
+        for (var i = 0; i < blocks.Count; i++)
+        {
+            s = SimpleReplacementMode(BitXor(s, blocks[i]));
+            blocks[i] = SimpleReplacementMode(blocks[i]);
+        }
+
+        return s;
+    }
+
+    public void Encrypt()
+    {
+        var messageBytes = File.ReadAllBytes("./input.txt");
+        var blocks = SplitMessageIntoBlocks(messageBytes);
+        
+        var mac = GetMAC(blocks)[..32];
+        Console.WriteLine($"MAC: {string.Join("", mac)}");
+        File.WriteAllText("./MAC.txt", string.Join("", mac));
+        
+        Console.WriteLine($"Encrypted message: {Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()))}");
+        File.WriteAllText("./encrypted_message.txt", string.Join("", string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b))))));
+    }
+
+    public void Decrypt()
+    {
+        var messageBits = File.ReadAllText("./encrypted_message.txt");
+        var blocks = messageBits
+            .Split('\n')
+            .Select(line => line
+                .Select(c => int.Parse(c.ToString())
+                ).ToArray()
+            ).ToList();
+        
+        for (var i = 0; i < blocks.Count; i++)
+        {
+            blocks[i] = SimpleReplacementMode(blocks[i]);
+        }
+
+        var message = Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()));
+        
+        var mac = GetMAC(blocks)[..32];
+        var initialMac = File.ReadAllText("./MAC.txt");
+        if (string.Join("", mac) != initialMac)
+        {
+            throw new Exception("MAC does not match");
+        }
+        
+        Console.WriteLine($"Decrypted message: {message}");
+    }
+
+    private static byte[] BitsToBytes(IReadOnlyList<int> bits)
+    {
+        var numBytes = (bits.Count + 7) / 8;
+
+        var bytes = new byte[numBytes];
+        for (var i = 0; i < bits.Count; i++)
+        {
+            var byteIndex = i / 8;
+            var bitIndex = i % 8;
+            bytes[byteIndex] |= (byte)(bits[i] << (7 - bitIndex));
+        }
+
+        return bytes;
+    }
+
 
     private static int[] BytesToBits(IEnumerable<byte> bytes)
     {
@@ -146,58 +202,5 @@ public class Cryptographer
         }
 
         return result;
-    }
-
-    private int[] SimpleReplacementMode(int[] block)
-    {
-        for (var _ = 0; _ < 2; _++)
-        {
-            foreach (var key in Key)
-            {
-                var n1 = block[..32];
-                var n2 = block[32..];
-
-                var sBits = BitXor(n1, key);
-                var subsequences = new List<int[]>();
-                for (var i = 0; i < sBits.Length; i += 4)
-                {
-                    subsequences.Add(sBits[i..(i + 4)]);
-                }
-
-                var s = new List<int>();
-
-                for (var i = 0; i < subsequences.Count; i++)
-                {
-                    var newSI = SubstitutionTable[i][BitsToInt(subsequences[i])];
-                    s.AddRange(ByteToBits(BitConverter.GetBytes(newSI)));
-                }
-
-                var shiftedS = ShiftBitsLeft(s, 11);
-                var result = BitXor(shiftedS, n2);
-
-                block = n1.Concat(result).ToArray();
-            }
-        }
-
-        return block;
-    }
-
-    private int[] GetMAC(List<int[]> blocks)
-    {
-        var s = new int[64];
-        foreach (var block in blocks)
-        {
-            s = SimpleReplacementMode(BitXor(s, block));
-        }
-
-        return s;
-    }
-
-    public void Encrypt(byte[] messageBytes)
-    {
-        var blocks = SplitMessageIntoBlocks(messageBytes);
-        var mac = GetMAC(blocks)[..32];
-        Console.WriteLine($"MAC: {string.Join("", mac)}");
-        // Console.WriteLine(string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b)))));
     }
 }

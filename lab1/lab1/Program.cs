@@ -1,5 +1,4 @@
-﻿using System.Text;
-using lab1;
+﻿using lab1;
 
 
 var message = File.ReadAllBytes("./input.txt");
@@ -7,4 +6,5 @@ var message = File.ReadAllBytes("./input.txt");
 // Console.WriteLine($"Initial message: {Encoding.UTF8.GetString(message)}");
 
 var cryptographer = new Cryptographer();
-cryptographer.Encrypt(message);
+cryptographer.Encrypt();
+cryptographer.Decrypt();
