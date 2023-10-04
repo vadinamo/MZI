@@ -23,13 +23,34 @@ public class Cryptographer
 
         key = new List<int[]>
         {
-            new int[] { 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1 },
-            new int[] { 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1 },
-            new int[] { 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
-            new int[] { 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1 },
-            new int[] { 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0 },
-            new int[] { 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0 },
-            new int[] { 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0 },
+            new int[]
+            {
+                0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1
+            },
+            new int[]
+            {
+                1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1
+            },
+            new int[]
+            {
+                1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0
+            },
+            new int[]
+            {
+                0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1
+            },
+            new int[]
+            {
+                0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0
+            },
+            new int[]
+            {
+                0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0
+            },
+            new int[]
+            {
+                0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0
+            },
             new int[] { 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1 }
         };
 
@@ -43,7 +64,7 @@ public class Cryptographer
                 .Select(_ => Random.Next(0, 16))
                 .ToArray())
             .ToList();
-        
+
         table = new List<int[]>
         {
             new int[] { 11, 5, 7, 11, 11, 7, 5, 1, 11, 5, 7, 6, 0, 12, 9, 3 },
@@ -90,7 +111,8 @@ public class Cryptographer
 
     private static int[] ByteToBits(IEnumerable<byte> bytes)
     {
-        return bytes.Take(4).SelectMany(b => Enumerable.Range(0, 8).Select(i => (b >> i) & 1)).Reverse().ToArray()[^4..];
+        return bytes.Take(4).SelectMany(b => Enumerable.Range(0, 8).Select(i => (b >> i) & 1)).Reverse()
+            .ToArray()[^4..];
     }
 
     private static int[] BitXor(IReadOnlyList<int> array1, IReadOnlyList<int> array2)
@@ -113,45 +135,48 @@ public class Cryptographer
     {
         return Convert.ToInt32(string.Join("", bits), 2);
     }
-    
+
     private static int[] ShiftBitsLeft(IReadOnlyList<int> bits, int shiftAmount)
     {
         var result = new int[bits.Count];
-    
+
         for (var i = shiftAmount; i < bits.Count; i++)
         {
             result[i - shiftAmount] = bits[i];
         }
-    
+
         return result;
     }
 
     private int[] SimpleReplacementMode(int[] block)
     {
-        foreach (var key in Key)
+        for (var _ = 0; _ < 2; _++)
         {
-            var n1 = block[..32];
-            var n2 = block[32..];
-
-            var sBits = BitXor(n1, key);
-            var subsequences = new List<int[]>();
-            for (var i = 0; i < sBits.Length; i += 4)
+            foreach (var key in Key)
             {
-                subsequences.Add(sBits[i..(i + 4)]);
+                var n1 = block[..32];
+                var n2 = block[32..];
+
+                var sBits = BitXor(n1, key);
+                var subsequences = new List<int[]>();
+                for (var i = 0; i < sBits.Length; i += 4)
+                {
+                    subsequences.Add(sBits[i..(i + 4)]);
+                }
+
+                var s = new List<int>();
+
+                for (var i = 0; i < subsequences.Count; i++)
+                {
+                    var newSI = SubstitutionTable[i][BitsToInt(subsequences[i])];
+                    s.AddRange(ByteToBits(BitConverter.GetBytes(newSI)));
+                }
+
+                var shiftedS = ShiftBitsLeft(s, 11);
+                var result = BitXor(shiftedS, n2);
+
+                block = n1.Concat(result).ToArray();
             }
-
-            var s = new List<int>();
-            
-            for (var i = 0; i < subsequences.Count; i++)
-            {
-                var newSI = SubstitutionTable[i][BitsToInt(subsequences[i])];
-                s.AddRange(ByteToBits(BitConverter.GetBytes(newSI)));
-            }
-
-            var shiftedS = ShiftBitsLeft(s, 11);
-            var result = BitXor(shiftedS, n2);
-
-            block = n1.Concat(result).ToArray();
         }
 
         return block;
@@ -162,10 +187,7 @@ public class Cryptographer
         var s = new int[64];
         foreach (var block in blocks)
         {
-            for (var i = 0; i < 2; i++)
-            {
-                s = SimpleReplacementMode(BitXor(s, block));
-            }
+            s = SimpleReplacementMode(BitXor(s, block));
         }
 
         return s;
@@ -174,7 +196,8 @@ public class Cryptographer
     public void Encrypt(byte[] messageBytes)
     {
         var blocks = SplitMessageIntoBlocks(messageBytes);
-        var mac = GetMAC(blocks);
+        var mac = GetMAC(blocks)[..32];
+        Console.WriteLine($"MAC: {string.Join("", mac)}");
         // Console.WriteLine(string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b)))));
     }
 }
