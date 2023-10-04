@@ -6,7 +6,7 @@ public class Cryptographer
 {
     private List<int[]> Key { get; set; }
     private List<int[]> SubstitutionTable { get; set; }
-    private Random Random { get; set; }
+    private Random Random { get; }
 
     public Cryptographer()
     {
@@ -60,6 +60,27 @@ public class Cryptographer
 
         return blocks;
     }
+    
+    private int[] AddModulo32(int[] array1, int[] array2)
+    {
+        if (array1.Length != array2.Length)
+        {
+            throw new ArgumentException("Arrays must have the same length");
+        }
+
+        var result = new int[array1.Length];
+        var carry = 0;
+
+        for (var i = array1.Length - 1; i >= 0; i--)
+        {
+            var sum = array1[i] + array2[i] + carry;
+            result[i] = sum & 1;
+            carry = sum >> 1;
+        }
+
+        return result;
+    }
+
 
     private int[] SimpleReplacementMode(int[] block, int roundCount)
     {
@@ -68,7 +89,7 @@ public class Cryptographer
 
         for (var round = 0; round < roundCount; round++)
         {
-            var sBits = BitXor(n1, Key[round < 24 ? round % 8 : 7 - round % 8]);
+            var sBits = AddModulo32(n1, Key[round < 24 ? round % 8 : 7 - round % 8]);
             var subsequences = new List<int[]>();
             for (var i = 0; i < sBits.Length; i += 4)
             {
@@ -117,10 +138,20 @@ public class Cryptographer
             $"Encrypted message: {Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()))}");
         File.WriteAllText("./encrypted_message.txt",
             string.Join("", string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b))))));
+        
+        File.WriteAllText("./key.txt", string.Join("\n", Key.Select(k => string.Join(" ", k))));
+        File.WriteAllText("./substitution_table.txt", string.Join("\n", SubstitutionTable.Select(k => string.Join(" ", k))));
     }
 
     public void Decrypt()
     {
+        Key = File.ReadAllLines("./key.txt")
+            .Select(line => line.Split(' ').Select(int.Parse).ToArray())
+            .ToList();
+        SubstitutionTable = File.ReadAllLines("./substitution_table.txt")
+            .Select(line => line.Split(' ').Select(int.Parse).ToArray())
+            .ToList();
+        
         var messageBits = File.ReadAllText("./encrypted_message.txt");
         var blocks = messageBits
             .Split('\n')
