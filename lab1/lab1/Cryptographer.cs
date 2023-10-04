@@ -60,7 +60,7 @@ public class Cryptographer
 
         return blocks;
     }
-    
+
     private int[] AddModulo32(int[] array1, int[] array2)
     {
         if (array1.Length != array2.Length)
@@ -82,14 +82,18 @@ public class Cryptographer
     }
 
 
-    private int[] SimpleReplacementMode(int[] block, int roundCount)
+    private int[] SimpleReplacementMode(int[] block, int roundCount, bool encrypt)
     {
         var n1 = block[..32];
         var n2 = block[32..];
 
         for (var round = 0; round < roundCount; round++)
         {
-            var sBits = AddModulo32(n1, Key[round < 24 ? round % 8 : 7 - round % 8]);
+            var sBits = AddModulo32(n1, Key[
+                encrypt
+                ? round < 24 ? round % 8 : 7 - round % 8
+                : round < 8 ? round % 8 : 7 - round % 8
+            ]);
             var subsequences = new List<int[]>();
             for (var i = 0; i < sBits.Length; i += 4)
             {
@@ -106,7 +110,7 @@ public class Cryptographer
 
             var shiftedS = BitwiseOr(ShiftBitsLeft(s, 11), ShiftBitsRight(s, 21));
             var result = BitXor(shiftedS, n2);
-            
+
             if (round < 31)
             {
                 n2 = n1;
@@ -118,7 +122,8 @@ public class Cryptographer
             }
         }
 
-        return n1.Concat(n2).ToArray();;
+        return n1.Concat(n2).ToArray();
+        ;
     }
 
     private int[] GetMAC(List<int[]> blocks)
@@ -126,8 +131,8 @@ public class Cryptographer
         var s = new int[64];
         for (var i = 0; i < blocks.Count; i++)
         {
-            s = SimpleReplacementMode(BitXor(s, blocks[i]), 16);
-            blocks[i] = SimpleReplacementMode(blocks[i], 32);
+            s = SimpleReplacementMode(BitXor(s, blocks[i]), 16, true);
+            blocks[i] = SimpleReplacementMode(blocks[i], 32, true);
         }
 
         return s;
@@ -146,9 +151,10 @@ public class Cryptographer
             $"Encrypted message: {Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()))}");
         File.WriteAllText("./encrypted_message.txt",
             string.Join("", string.Join("\n", blocks.Select(block => string.Join("", block.Select(b => b))))));
-        
+
         File.WriteAllText("./key.txt", string.Join("\n", Key.Select(k => string.Join(" ", k))));
-        File.WriteAllText("./substitution_table.txt", string.Join("\n", SubstitutionTable.Select(k => string.Join(" ", k))));
+        File.WriteAllText("./substitution_table.txt",
+            string.Join("\n", SubstitutionTable.Select(k => string.Join(" ", k))));
     }
 
     public void Decrypt()
@@ -159,7 +165,7 @@ public class Cryptographer
         SubstitutionTable = File.ReadAllLines("./substitution_table.txt")
             .Select(line => line.Split(' ').Select(int.Parse).ToArray())
             .ToList();
-        
+
         var messageBits = File.ReadAllText("./encrypted_message.txt");
         var blocks = messageBits
             .Split('\n')
@@ -170,7 +176,7 @@ public class Cryptographer
 
         for (var i = 0; i < blocks.Count; i++)
         {
-            blocks[i] = SimpleReplacementMode(blocks[i], 32);
+            blocks[i] = SimpleReplacementMode(blocks[i], 32, false);
         }
 
         var message = Encoding.UTF8.GetString(BitsToBytes(blocks.SelectMany(b => b).ToArray()));
@@ -179,7 +185,7 @@ public class Cryptographer
         var initialMac = File.ReadAllText("./MAC.txt");
         if (string.Join("", mac) != initialMac)
         {
-            // throw new Exception("MAC does not match");
+            throw new Exception("MAC does not match");
         }
 
         Console.WriteLine($"Decrypted message: {message}");
@@ -244,7 +250,7 @@ public class Cryptographer
 
         return result;
     }
-    
+
     private static int[] ShiftBitsRight(IReadOnlyList<int> bits, int shiftAmount)
     {
         var result = new int[bits.Count];
@@ -256,7 +262,7 @@ public class Cryptographer
 
         return result;
     }
-    
+
     private static int[] BitwiseOr(int[] bits1, int[] bits2)
     {
         if (bits1.Length != bits2.Length)
