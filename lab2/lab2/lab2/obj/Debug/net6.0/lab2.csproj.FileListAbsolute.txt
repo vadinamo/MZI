@@ -1,0 +1,15 @@
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/bin/Debug/net6.0/lab2
+/Users/vadinamo/Documents/МЗИ/lab2/Lab2/lab2/bin/Debug/net6.0/lab2.deps.json
+/Users/vadinamo/Documents/МЗИ/lab2/Lab2/lab2/bin/Debug/net6.0/lab2.runtimeconfig.json
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/bin/Debug/net6.0/lab2.dll
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/bin/Debug/net6.0/lab2.pdb
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.csproj.AssemblyReference.cache
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.GeneratedMSBuildEditorConfig.editorconfig
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.AssemblyInfoInputs.cache
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.AssemblyInfo.cs
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.csproj.CoreCompileInputs.cache
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.dll
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/refint/lab2.dll
+/Users/vadinamo/Documents/МЗИ/lab2/lab2/lab2/obj/Debug/net6.0/lab2.pdb
+/Users/vadinamo/Documents/МЗИ/lab2/Lab2/lab2/obj/Debug/net6.0/lab2.genruntimeconfig.cache
+/Users/vadinamo/Documents/МЗИ/lab2/Lab2/lab2/obj/Debug/net6.0/ref/lab2.dll
