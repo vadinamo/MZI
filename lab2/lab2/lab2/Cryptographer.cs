@@ -52,18 +52,32 @@ public class Cryptographer
 
         var blocks = SplitMessageIntoBlocks(messageBytes);
 
-        F(syncMessage, key);
+        var s = F(syncMessage, key);
     }
 
-    private void SubstitutionH()
+    private uint SubstitutionH(uint word)
     {
+        var wordBytes = BitConverter.GetBytes(word);
+
+        for (var i = 0; i < 4; i++)
+        {
+            var u = (uint)wordBytes[i];
+            var x = (int)(u >> 4);
+            var y = (int)((u << 28) >> 28);
+
+            wordBytes[i] = H[x, y];
+        }
+
+        return BitConverter.ToUInt32(wordBytes);
     }
 
-    private void Gr(uint word, int r)
+    private uint G(uint word, int r)
     {
+        word = SubstitutionH(word);
+        return (word << (r % 32) & uint.MaxValue - 1) ^ (word >> (32 - r) % 32);
     }
 
-    private void F(byte[] block, byte[] key)
+    private byte[] F(byte[] block, byte[] key)
     {
         if (block.Length != 16)
         {
@@ -77,7 +91,40 @@ public class Cryptographer
 
         for (var i = 0; i < 8; i++)
         {
-            b = b ^
+            b ^= G(ModuloAddition(a, GetKeyPart(key, 7 * (i + 1) - 6)), 5);
+            c ^= G(ModuloAddition(d, GetKeyPart(key, 7 * (i + 1) - 5)), 21);
+            a = ModuloSubtraction(a, G(ModuloAddition(b, GetKeyPart(key, 7 * (i + 1) - 4)), 13));
+            var e = G(ModuloAddition(ModuloAddition(b, c), GetKeyPart(key, 7 * (i + 1) - 3)), 21) ^ (uint)(i + 1);
+            b = ModuloAddition(b, e);
+            c = ModuloSubtraction(c, e);
+            d = ModuloAddition(d, G(ModuloAddition(c, GetKeyPart(key, 7 * (i + 1) - 2)), 13));
+            b ^= G(ModuloAddition(a, GetKeyPart(key, 7 * (i + 1) - 1)), 21);
+            c ^= G(ModuloAddition(d, GetKeyPart(key, 7 * (i + 1))), 5);
+            (a, b) = (b, a);
+            (c, d) = (d, c);
+            (b, c) = (c, b);
         }
+
+        return BitConverter.GetBytes(a).Concat(
+                BitConverter.GetBytes(b)).Concat(
+                BitConverter.GetBytes(c)).Concat(
+                BitConverter.GetBytes(d))
+            .ToArray();
+    }
+
+    static uint GetKeyPart(byte[] key, int part)
+    {
+        var keyPart = key.Skip((part % 8 - 1) * 4).Take(4).ToArray();
+        return BitConverter.ToUInt32(keyPart, 0);
+    }
+
+    private uint ModuloAddition(uint num1, uint num2)
+    {
+        return (num1 + num2) % uint.MaxValue;
+    }
+
+    private uint ModuloSubtraction(uint num1, uint num2)
+    {
+        return (num1 - num2) % uint.MaxValue;
     }
 }
