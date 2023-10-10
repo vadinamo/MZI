@@ -14,4 +14,7 @@ byte[] GenerateByteArray(int count)
 var messageBytes = File.ReadAllBytes("./input.txt");
 
 var cryptographer = new Cryptographer();
-cryptographer.Encrypt(messageBytes, GenerateByteArray(32), GenerateByteArray(16));
+var result = cryptographer.Encrypt(messageBytes, GenerateByteArray(32), GenerateByteArray(16));
+
+Console.WriteLine(string.Join(" ", messageBytes));
+Console.WriteLine(string.Join(" ", result));

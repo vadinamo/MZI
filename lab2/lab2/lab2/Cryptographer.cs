@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace lab2;
 
 public class Cryptographer
@@ -32,8 +34,20 @@ public class Cryptographer
 
         return blocks;
     }
+    
+    static byte[] XOR(byte[] a, byte[] b)
+    {
+        var result = new byte[a.Length];
 
-    public void Encrypt(byte[] messageBytes, byte[] key, byte[] syncMessage)
+        for (var i = 0; i < a.Length; i++)
+        {
+            result[i] = (byte)(a[i] ^ b[i]);
+        }
+
+        return result;
+    }
+
+    public byte[] Encrypt(byte[] messageBytes, byte[] key, byte[] syncMessage)
     {
         if (messageBytes.Length == 0)
         {
@@ -50,15 +64,30 @@ public class Cryptographer
             throw new ArgumentException("SyncMessage should be 16 bytes (128 bits)");
         }
 
-        var blocks = SplitMessageIntoBlocks(messageBytes);
-
         var s = F(syncMessage, key);
+
+        var X = SplitMessageIntoBlocks(messageBytes);
+        var Y = new List<byte[]>();
+        foreach (var block in X)
+        {
+            s = new byte[12].Concat(BitConverter.GetBytes(ModuloAddition(BitConverter.ToUInt32(s), 1))).ToArray();
+            var result = XOR(block, L(F(s, key), block.Length));
+            
+            Y.Add(result);
+        }
+
+
+        return Y.SelectMany(y => y).ToArray();
+    }
+
+    private byte[] L(byte[] word, int count)
+    {
+        return word.Select((b, i) => i < count ? b : (byte)0).ToArray();
     }
 
     private uint SubstitutionH(uint word)
     {
         var wordBytes = BitConverter.GetBytes(word);
-
         for (var i = 0; i < 4; i++)
         {
             var u = (uint)wordBytes[i];
@@ -105,11 +134,13 @@ public class Cryptographer
             (b, c) = (c, b);
         }
 
-        return BitConverter.GetBytes(a).Concat(
-                BitConverter.GetBytes(b)).Concat(
-                BitConverter.GetBytes(c)).Concat(
-                BitConverter.GetBytes(d))
-            .ToArray();
+        var aBytes = BitConverter.GetBytes(a);
+        var bBytes = BitConverter.GetBytes(b);
+        var cBytes = BitConverter.GetBytes(c);
+        var dBytes = BitConverter.GetBytes(d);
+        
+        var result = aBytes.Concat(bBytes).Concat(cBytes).Concat(dBytes).ToArray();
+        return result;
     }
 
     static uint GetKeyPart(byte[] key, int part)
