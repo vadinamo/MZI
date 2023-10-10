@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace lab2;
 
 public class Cryptographer
@@ -24,7 +22,7 @@ public class Cryptographer
         { 0xD4, 0xEF, 0xD9, 0xB4, 0x3A, 0x62, 0x28, 0x75, 0x91, 0x14, 0x10, 0xEA, 0x77, 0x6C, 0xDA, 0x1D },
     };
 
-    private List<byte[]> SplitMessageIntoBlocks(byte[] initialBytes)
+    private static List<byte[]> SplitMessageIntoBlocks(byte[] initialBytes)
     {
         var blocks = new List<byte[]>();
         for (var i = 0; i < Math.Ceiling((double)initialBytes.Length / 16); i++)
@@ -34,8 +32,8 @@ public class Cryptographer
 
         return blocks;
     }
-    
-    static byte[] XOR(byte[] a, byte[] b)
+
+    private static byte[] XOR(byte[] a, byte[] b)
     {
         var result = new byte[a.Length];
 
@@ -47,7 +45,7 @@ public class Cryptographer
         return result;
     }
 
-    public byte[] Encrypt(byte[] messageBytes, byte[] key, byte[] syncMessage)
+    public byte[] CounterMode(byte[] messageBytes, byte[] key, byte[] syncMessage)
     {
         if (messageBytes.Length == 0)
         {
@@ -72,7 +70,7 @@ public class Cryptographer
         {
             s = new byte[12].Concat(BitConverter.GetBytes(ModuloAddition(BitConverter.ToUInt32(s), 1))).ToArray();
             var result = XOR(block, L(F(s, key), block.Length));
-            
+
             Y.Add(result);
         }
 
@@ -80,7 +78,7 @@ public class Cryptographer
         return Y.SelectMany(y => y).ToArray();
     }
 
-    private byte[] L(byte[] word, int count)
+    private static byte[] L(byte[] word, int count)
     {
         return word.Select((b, i) => i < count ? b : (byte)0).ToArray();
     }
@@ -138,23 +136,23 @@ public class Cryptographer
         var bBytes = BitConverter.GetBytes(b);
         var cBytes = BitConverter.GetBytes(c);
         var dBytes = BitConverter.GetBytes(d);
-        
+
         var result = aBytes.Concat(bBytes).Concat(cBytes).Concat(dBytes).ToArray();
         return result;
     }
 
-    static uint GetKeyPart(byte[] key, int part)
+    private static uint GetKeyPart(byte[] key, int part)
     {
         var keyPart = key.Skip((part % 8 - 1) * 4).Take(4).ToArray();
         return BitConverter.ToUInt32(keyPart, 0);
     }
 
-    private uint ModuloAddition(uint num1, uint num2)
+    private static uint ModuloAddition(uint num1, uint num2)
     {
         return (num1 + num2) % uint.MaxValue;
     }
 
-    private uint ModuloSubtraction(uint num1, uint num2)
+    private static uint ModuloSubtraction(uint num1, uint num2)
     {
         return (num1 - num2) % uint.MaxValue;
     }
