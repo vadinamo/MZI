@@ -7,7 +7,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
+using System
+    ;
 using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("lab3")]

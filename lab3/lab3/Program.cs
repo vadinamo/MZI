@@ -1,13 +1,23 @@
-﻿using System.Numerics;
-using System.Text;
+﻿using System.Text;
 using lab3;
-using static System.Numerics.BigInteger;
 
-var messageBytes = File.ReadAllBytes("./input.txt");
-const int p = 239;
+
+const int p = 307;
 const int q = 283;
 
-var encryptedBytes = Cryptographer.Encrypt(messageBytes, p * q);
-var decryptedBytes = Cryptographer.Decrypt(encryptedBytes, p, q);
+void Encrypt(byte[] messageBytes)
+{
+    var encryptedBytes = Cryptographer.Encrypt(messageBytes, p * q);
+    File.WriteAllBytes("./encrypted_message.txt", encryptedBytes);
+    Console.WriteLine($"Encrypted message: {Encoding.UTF8.GetString(encryptedBytes)}");
+}
 
-Console.WriteLine(Encoding.UTF8.GetString(decryptedBytes));
+void Decrypt()
+{
+    var encryptedBytes = File.ReadAllBytes("./encrypted_message.txt");
+    var decryptedBytes = Cryptographer.Decrypt(encryptedBytes, p, q);
+    Console.WriteLine($"Decrypted message: {Encoding.UTF8.GetString(decryptedBytes)}");
+}
+
+Encrypt(File.ReadAllBytes("./input.txt"));
+Decrypt();

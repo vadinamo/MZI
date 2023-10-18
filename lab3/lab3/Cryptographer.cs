@@ -18,7 +18,7 @@ public static class Cryptographer
         var result = 1.0;
         for (var i = 0; i < k; i++)
         {
-            result = (result * c) % m;
+            result = result * c % m;
         }
 
         return result;
@@ -32,14 +32,7 @@ public static class Cryptographer
         {
             var c = BitConverter.ToUInt16(messageBytes.Skip(i * 2).Take(2).ToArray());
             var variants = ChineseRemainderTheorem(c, p, q, yp, yq);
-            foreach (var variant in variants)
-            {
-                var literalBytes = BitConverter.GetBytes(variant);
-                if (literalBytes[1] == 0)
-                {
-                    result.Add(literalBytes[0]);
-                }
-            }
+            result.Add(variants.Select(BitConverter.GetBytes).First(v => v[1] == 0)[0]);
         }
 
         return result.ToArray();
