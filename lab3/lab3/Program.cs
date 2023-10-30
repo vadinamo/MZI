@@ -12,12 +12,11 @@ void Encrypt(byte[] messageBytes)
     Console.WriteLine($"Encrypted message: {Encoding.UTF8.GetString(encryptedBytes)}");
 }
 
-void Decrypt()
+void Decrypt(byte[] encryptedBytes)
 {
-    var encryptedBytes = File.ReadAllBytes("./encrypted_message.txt");
     var decryptedBytes = Cryptographer.Decrypt(encryptedBytes, p, q);
     Console.WriteLine($"Decrypted message: {Encoding.UTF8.GetString(decryptedBytes)}");
 }
 
 Encrypt(File.ReadAllBytes("./input.txt"));
-Decrypt();
+Decrypt(File.ReadAllBytes("./encrypted_message.txt"));

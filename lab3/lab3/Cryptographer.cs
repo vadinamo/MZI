@@ -26,7 +26,7 @@ public static class Cryptographer
 
     public static byte[] Decrypt(byte[] messageBytes, int p, int q)
     {
-        var (yp, yq) = EuclidAlgorithm(p, q);
+        var (yp, yq) = EuclideanAlgorithm(p, q);
         var result = new List<byte>();
         for (var i = 0; i < messageBytes.Length / 2; i++)
         {
@@ -60,7 +60,7 @@ public static class Cryptographer
         };
     }
 
-    private static (int, int) EuclidAlgorithm(int p, int q)
+    private static (int, int) EuclideanAlgorithm(int p, int q)
     {
         int x0 = 1, x1 = 0, y0 = 0, y1 = 1;
 
@@ -69,16 +69,13 @@ public static class Cryptographer
             var d = p / q;
             var r = p % q;
 
-            p = q;
-            q = r;
+            (p, q) = (q, r);
 
             var x = x0 - x1 * d;
             var y = y0 - y1 * d;
 
-            x0 = x1;
-            y0 = y1;
-            x1 = x;
-            y1 = y;
+            (x0, y0) = (x1, y1);
+            (x1, y1) = (x, y);
         }
 
         return (x0, y0);

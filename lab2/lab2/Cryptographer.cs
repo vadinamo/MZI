@@ -101,7 +101,7 @@ public class Cryptographer
     private uint G(uint word, int r)
     {
         word = SubstitutionH(word);
-        return (word << (r % 32) & uint.MaxValue - 1) ^ (word >> (32 - r) % 32);
+        return (word << r & uint.MaxValue - 1) ^ (word >> (32 - r) % 32);
     }
 
     private byte[] F(byte[] block, byte[] key)
