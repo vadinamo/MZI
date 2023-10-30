@@ -3,4 +3,4 @@
 var messageBytes = File.ReadAllBytes("./input.txt");
 
 var cryptographer = new MD5();
-cryptographer.Hash(messageBytes);
+Console.WriteLine(Convert.ToHexString(cryptographer.Hash(messageBytes)));
