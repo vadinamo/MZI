@@ -1,6 +1,6 @@
 namespace lab5;
 
-public class MD5
+public static class MD5
 {
     private static readonly uint[] T =
     {
@@ -30,22 +30,22 @@ public class MD5
         6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
     };
 
-    private uint FunF(uint x, uint y, uint z)
+    private static uint FunF(uint x, uint y, uint z)
     {
         return (x & y) | (~x & z);
     }
 
-    private uint FunG(uint x, uint y, uint z)
+    private static uint FunG(uint x, uint y, uint z)
     {
         return (x & z) | (~z & y);
     }
 
-    private uint FunH(uint x, uint y, uint z)
+    private static uint FunH(uint x, uint y, uint z)
     {
         return x ^ y ^ z;
     }
 
-    private uint FunI(uint x, uint y, uint z)
+    private static uint FunI(uint x, uint y, uint z)
     {
         return y ^ (~z | x);
     }
@@ -55,7 +55,7 @@ public class MD5
         return (x << c) | (x >> (32 - c));
     }
 
-    public byte[] Hash(byte[] messageBytes)
+    public static byte[] Hash(byte[] messageBytes)
     {
         var bytes = messageBytes.ToList();
         bytes.Add(0x80);
@@ -85,30 +85,29 @@ public class MD5
             var B = b0;
             var C = c0;
             var D = d0;
-            var F = 0u;
-            var g = 0u;
-
+            
+            uint F;
             for (var j = 0u; j < 64; j++)
             {
-                if (j < 16)
+                uint g;
+                switch (j)
                 {
-                    F = FunF(B, C, D);
-                    g = j;
-                }
-                else if (j is >= 16 and < 32)
-                {
-                    F = FunG(B, C, D);
-                    g = (5 * j + 1) % 16;
-                }
-                else if (j is >= 32 and < 48)
-                {
-                    F = FunH(B, C, D);
-                    g = (3 * j + 5) % 16;
-                }
-                else
-                {
-                    F = FunI(B, C, D);
-                    g = 7 * j % 16;
+                    case < 16:
+                        F = FunF(B, C, D);
+                        g = j;
+                        break;
+                    case >= 16 and < 32:
+                        F = FunG(B, C, D);
+                        g = (5 * j + 1) % 16;
+                        break;
+                    case >= 32 and < 48:
+                        F = FunH(B, C, D);
+                        g = (3 * j + 5) % 16;
+                        break;
+                    default:
+                        F = FunI(B, C, D);
+                        g = 7 * j % 16;
+                        break;
                 }
 
                 var buffer = D;
