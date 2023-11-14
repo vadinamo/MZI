@@ -1,0 +1,8 @@
+﻿// See https://aka.ms/new-console-template for more information
+
+using System.Numerics;
+
+var p = BigInteger.Parse("6277101735386680763835789423207666416083908700390324961279");
+var a = BigInteger.Parse("-3");
+var b = BigInteger.Parse("2455155546008943817740293915197451784769108058161191238065");
+var q = BigInteger.Parse("6277101735386680763835789423176059013767194773182842284081");
