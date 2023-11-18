@@ -288,11 +288,6 @@ public static class GOST3411
     public static byte[] Hash(byte[] M)
     {
         var h = new byte[64];
-
-        for (var i = 0; i < 64; i++)
-        {
-            h[i] = 1;
-        }
         
         var N = new byte[64];
         var E = new byte[64];

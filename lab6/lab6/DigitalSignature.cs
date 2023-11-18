@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text;
 
 namespace lab6;
 
@@ -32,10 +31,10 @@ public static class DigitalSignature
         return r1.Concat(s1).ToArray();
     }
 
-    public static byte[] GetSignature(string message, BigInteger m, BigInteger q, EllipticCurvePoint P,
+    public static byte[] GetSignature(byte[] message, BigInteger m, BigInteger q, EllipticCurvePoint P,
         BigInteger d, EllipticCurvePoint Q)
     {
-        var hash = GOST3411.Hash(Encoding.UTF8.GetBytes(message));
+        var hash = GOST3411.Hash(message);
         var alpha = new BigInteger(hash);
 
         var e = alpha % q;
@@ -60,19 +59,19 @@ public static class DigitalSignature
             {
                 continue;
             }
-            
+
             return BinaryVectors(q, r, s);
         } while (true);
     }
 
-    public static bool CheckValidity(byte[] digitalSignature, string message, BigInteger m, BigInteger q,
+    public static bool CheckValidity(byte[] digitalSignature, byte[] message, BigInteger m, BigInteger q,
         EllipticCurvePoint P,
         BigInteger d, EllipticCurvePoint Q)
     {
-        var r = new BigInteger(digitalSignature.Take(digitalSignature.Length / 2).ToArray());
-        var s = new BigInteger(digitalSignature.Skip(digitalSignature.Length / 2).Take(digitalSignature.Length / 2).ToArray());
-        
-        var hash = GOST3411.Hash(Encoding.UTF8.GetBytes(message));
+        var r = new BigInteger(digitalSignature[..(digitalSignature.Length / 2)]);
+        var s = new BigInteger(digitalSignature[(digitalSignature.Length / 2)..]);
+
+        var hash = GOST3411.Hash(message);
         var alpha = new BigInteger(hash);
 
         var e = alpha % q;
@@ -81,13 +80,20 @@ public static class DigitalSignature
             e = 1;
         }
 
-        var temp = new Org.BouncyCastle.Math.BigInteger(e.ToByteArray().Reverse().ToArray());
-        var v = new BigInteger(temp.ModInverse(new Org.BouncyCastle.Math.BigInteger(q.ToByteArray().Reverse().ToArray())).ToByteArray().Reverse().ToArray());
+        var v = BigInteger.Parse(
+            new Org.BouncyCastle.Math.BigInteger(
+                e.ToString()
+            ).ModInverse(
+                new Org.BouncyCastle.Math.BigInteger(
+                    q.ToString()
+                )
+            ).ToString()!
+        );
 
         var z1 = s * v % q;
-        var z2 = -r * v % q;
+        var z2 = -r * v % q + q;
 
-        var C = EllipticCurvePoint.Add(EllipticCurvePoint.Multiply(P, z1), EllipticCurvePoint.Multiply(Q, z2));
+        var C = EllipticCurvePoint.Multiply(P, z1) + EllipticCurvePoint.Multiply(Q, z2);
         var R = C.x % q;
 
         return R == r;
