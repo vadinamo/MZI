@@ -288,6 +288,12 @@ public static class GOST3411
     public static byte[] Hash(byte[] M)
     {
         var h = new byte[64];
+
+        for (var i = 0; i < 64; i++)
+        {
+            h[i] = 1;
+        }
+        
         var N = new byte[64];
         var E = new byte[64];
         var v512 = new byte[64];
@@ -312,6 +318,8 @@ public static class GOST3411
         E = ModularAddition(E, m);
         h = gN(new byte[64], h, N);
         h = gN(new byte[64], h, E);
+        h = h.Skip(32).Take(32).ToArray();
+        h[31] = 0;
         
         return h;
     }

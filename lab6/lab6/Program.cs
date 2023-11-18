@@ -1,26 +1,25 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Numerics;
+using System.Text;
 using lab6;
 
 var message = "Hello world!";
 
-var m = BigInteger.Parse("6277101735386680763835789423176059013767194773182842284081");
-var q = BigInteger.Parse("6277101735386680763835789423176059013767194773182842284081");
+var m = BigInteger.Parse("57896044618658097711785492504343953927082934583725450622380973592137631069619");
+var q = BigInteger.Parse("57896044618658097711785492504343953927082934583725450622380973592137631069619");
 
 var P = new EllipticCurvePoint(
-    BigInteger.Parse("602046282375688656758213480587526111916698976636884684818"),
-    BigInteger.Parse("174050332293622031404857552280219410364023488927386650641"),
-    BigInteger.Parse("-3"),
-    BigInteger.Parse("2455155546008943817740293915197451784769108058161191238065"),
-    BigInteger.Parse("6277101735386680763835789423207666416083908700390324961279")
+    BigInteger.Parse("2"),
+    BigInteger.Parse("4018974056539037503335449422937059775635739389905545080690979365213431566280"),
+    BigInteger.Parse("7"),
+    BigInteger.Parse("43308876546767276905765904595650931995942111794451039583252968842033849580414"),
+    BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564821041")
 );
 
 var d = BigInteger.Parse("123123");
 var Q = EllipticCurvePoint.Multiply(P, d);
 
 var digitalSignature = DigitalSignature.GetSignature(message, m, q, P, d, Q);
-foreach (var x in digitalSignature)
-{
-    Console.Write(x.ToString("X"));
-}
+Console.WriteLine(Encoding.UTF8.GetString(digitalSignature));
+Console.WriteLine(DigitalSignature.CheckValidity(digitalSignature, message, m, q, P, d, Q));

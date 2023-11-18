@@ -29,7 +29,7 @@ public class EllipticCurvePoint
         this.p = p;
     }
 
-    private static EllipticCurvePoint Add(EllipticCurvePoint P, EllipticCurvePoint Q)
+    public static EllipticCurvePoint Add(EllipticCurvePoint P, EllipticCurvePoint Q)
     {
         var m = P.Equals(Q) ? 
             (3 * BigInteger.Pow(P.x, 2) + P.a) / (2 * P.y) :
