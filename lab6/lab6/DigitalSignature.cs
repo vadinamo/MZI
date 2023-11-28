@@ -24,15 +24,20 @@ public static class DigitalSignature
     {
         var r1 = r.ToByteArray();
         while (r1.Length != q.GetBitLength() / 8)
+        {
             r1 = r1.Reverse().Concat(new byte[] { 0 }).Reverse().ToArray();
+        }
+
         var s1 = s.ToByteArray();
         while (s1.Length != q.GetBitLength() / 8)
+        {
             s1 = s1.Reverse().Concat(new byte[] { 0 }).Reverse().ToArray();
+        }
+
         return r1.Concat(s1).ToArray();
     }
 
-    public static byte[] GetSignature(byte[] message, BigInteger m, BigInteger q, EllipticCurvePoint P,
-        BigInteger d, EllipticCurvePoint Q)
+    public static byte[] GetSignature(byte[] message, BigInteger q, EllipticCurvePoint P, BigInteger d)
     {
         var hash = GOST3411.Hash(message);
         var alpha = new BigInteger(hash);
@@ -64,9 +69,8 @@ public static class DigitalSignature
         } while (true);
     }
 
-    public static bool CheckValidity(byte[] digitalSignature, byte[] message, BigInteger m, BigInteger q,
-        EllipticCurvePoint P,
-        BigInteger d, EllipticCurvePoint Q)
+    public static bool CheckValidity(byte[] digitalSignature, byte[] message, BigInteger q, EllipticCurvePoint P,
+        EllipticCurvePoint Q)
     {
         var r = new BigInteger(digitalSignature[..(digitalSignature.Length / 2)]);
         var s = new BigInteger(digitalSignature[(digitalSignature.Length / 2)..]);
